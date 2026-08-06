@@ -9,6 +9,13 @@ create table if not exists remont_data (
 
 alter table remont_data enable row level security;
 
+-- RLS policies alone aren't enough — Postgres also checks plain GRANTs, and the
+-- anon role has none on this table by default. Without this, every request comes
+-- back "permission denied for table remont_data" even though the policies below
+-- are correct.
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.remont_data to anon, authenticated;
+
 -- The app has no login screen, so it connects with the public "anon" key.
 -- These policies let anyone holding that key (i.e. anyone who opens the deployed
 -- site) read and write the single shared row. That's fine for a private family
